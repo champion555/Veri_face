@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+
+    <!-- FaceGraphic dimensions -->
+    <dimen name="eyeOutlineStroke">5dp</dimen>
+    <dimen name="textSize">10dp</dimen>
+    <dimen name="hintStroke">3dp</dimen>
+    <dimen name="corner_Radius">15dp </dimen>
+    <dimen name="margin_Top">20dp</dimen>
+    <dimen name="margin_left">20dp</dimen>
+    <dimen name="margin_right">20dp</dimen>
+    <dimen name="mark_icon">20dp</dimen>
+    <dimen name="item_icon">30dp</dimen>
+    <dimen name="mark_margin_left">20dp</dimen>
+    <dimen name="item_mark_left"> 15dp</dimen>
+    <dimen name="rel_height">200dp</dimen>
+    <dimen name="text_size">16dp</dimen>
+</resources>

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activity.EmailVerificationActivity">
+    <RelativeLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@color/purpleColor"
+        android:gravity="center">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Email Verification"
+            android:textColor="@color/whiteColor"
+            android:textSize="25dp"
+            android:textStyle="bold"/>
+    </RelativeLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/topBar">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="50dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Account Activation"
+                android:gravity="center"
+                android:textSize="25dp"
+                android:textColor="@color/colorBlack"
+                android:textStyle="bold"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="A text message with code has been sent to"
+                android:gravity="center"
+                android:textSize="19dp"
+                android:textColor="@color/colorBlack"/>
+            <TextView
+                android:id="@+id/txtEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="test@gmail.com"
+                android:gravity="center"
+                android:textSize="20dp"
+                android:textColor="@color/colorBlack"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Enter the code below"
+                android:textColor="@color/colorBlack"
+                android:textSize="20dp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="20dp">
+
+                <com.mukesh.OtpView
+                    android:id="@+id/otp_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@android:color/black"
+                    android:inputType="numberPassword"
+                    app:OtpItemCount="6"
+                    app:OtpItemSpacing="6dp"
+                    app:OtpItemWidth="50dp"
+                    app:OtpLineColor="@color/purpleColor"
+                    app:OtpState_filled="false"
+                    app:OtpViewType="line" />
+
+                <ImageView
+                    android:id="@+id/btnShow"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_show"
+                    android:layout_marginLeft="10dp"/>
+            </LinearLayout>
+            <Button
+                android:id="@+id/btnValidation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/round_button"
+                android:text="Validate"
+                android:textColor="@color/whiteColor"
+                android:textAllCaps="false"
+                android:layout_marginTop="30dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"/>
+            <TextView
+                android:id="@+id/btnReSend"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Send new Code"
+                android:textColor="@color/colorBlack"
+                android:textAllCaps="false"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp" />
+
+
+
+        </LinearLayout>
+    </RelativeLayout>
+
+</RelativeLayout>
