@@ -9,8 +9,9 @@ public class UserEnrollmentResponse {
     private String liveness_threshold;
     private String duration;
     private String enrollment_id;
+    private String message;
 
-    public UserEnrollmentResponse(String job_id, String status, String statusCode, String liveness_status, String liveness_score, String liveness_threshold, String duration, String enrollment_id) {
+    public UserEnrollmentResponse(String job_id, String status, String statusCode, String liveness_status, String liveness_score, String liveness_threshold, String duration, String enrollment_id,String message) {
         this.job_id = job_id;
         this.status = status;
         this.statusCode = statusCode;
@@ -19,6 +20,7 @@ public class UserEnrollmentResponse {
         this.liveness_threshold = liveness_threshold;
         this.duration = duration;
         this.enrollment_id = enrollment_id;
+        this.message = message;
     }
     public String getJob_id() {
         return job_id;
@@ -36,7 +38,5 @@ public class UserEnrollmentResponse {
     public String getLiveness_threshold() {return liveness_threshold;}
     public String getDuration() {return duration;}
     public String getEnrollment_id() {return enrollment_id;}
-
-
-
+    public String getMessage() {return message;}
 }

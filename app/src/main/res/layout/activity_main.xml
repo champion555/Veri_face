@@ -20,6 +20,15 @@
                 android:layout_height="match_parent"
                 android:orientation="horizontal">
                 <ImageView
+                    android:id="@+id/btnLogout"
+                    android:layout_width="35dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center"
+                    android:layout_alignParentLeft="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="16dp"
+                    android:src="@drawable/ic_logout"/>
+                <ImageView
                     android:id="@+id/btnSetting"
                     android:layout_width="35dp"
                     android:layout_height="35dp"
@@ -68,6 +77,19 @@
                     android:textSize="20dp"
                     android:textColor="@color/whiteColor"
                     android:textAllCaps="false" />
+<!--                <Button-->
+<!--                    android:id="@+id/btnVideoLivness"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="50dp"-->
+<!--                    android:layout_marginRight="@dimen/margin_right"-->
+<!--                    android:layout_marginLeft="@dimen/margin_left"-->
+<!--                    android:background="@drawable/round_button"-->
+<!--                    android:text="Video Liveness"-->
+<!--                    android:textSize="20dp"-->
+<!--                    android:textColor="@color/whiteColor"-->
+<!--                    android:textAllCaps="false"-->
+<!--                    android:layout_marginTop="10dp"/>-->
+
                 <Button
                     android:id="@+id/btnEnroll"
                     android:layout_width="match_parent"
@@ -92,18 +114,6 @@
                     android:textColor="@color/whiteColor"
                     android:textAllCaps="false"
                     android:layout_marginTop="10dp"/>
-<!--                <Button-->
-<!--                    android:id="@+id/btnKeepID"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="50dp"-->
-<!--                    android:layout_marginRight="@dimen/margin_right"-->
-<!--                    android:layout_marginLeft="@dimen/margin_left"-->
-<!--                    android:background="@drawable/round_button"-->
-<!--                    android:text="Keep ID"-->
-<!--                    android:textSize="20dp"-->
-<!--                    android:textColor="@color/whiteColor"-->
-<!--                    android:textAllCaps="false"-->
-<!--                    android:layout_marginTop="10dp"/>-->
                 <Button
                     android:id="@+id/btnFaceMatch"
                     android:layout_width="match_parent"
@@ -123,7 +133,7 @@
                     android:layout_marginRight="@dimen/margin_right"
                     android:layout_marginLeft="@dimen/margin_left"
                     android:background="@drawable/round_button"
-                    android:text="Sanction/AML Check"
+                    android:text="KYX Onbording"
                     android:textSize="20dp"
                     android:textColor="@color/whiteColor"
                     android:textAllCaps="false"

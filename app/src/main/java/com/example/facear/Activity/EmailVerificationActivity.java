@@ -57,12 +57,14 @@ public class EmailVerificationActivity extends AppCompatActivity implements View
     @Override public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btnValidation:
-                isValidate = true;
-                AuthenticationToServer();
+                    if (isFullCode){
+                        validateMailToServer();
+                    }else {
+                        Toast.makeText(EmailVerificationActivity.this, "you must enter the code fully", Toast.LENGTH_LONG).show();
+                    }
                 break;
             case R.id.btnReSend:
-                isSendMail = true;
-                AuthenticationToServer();
+                    sendMailToServer();
                 break;
             case R.id.btnShow:
                 if (isshow == false) {
@@ -93,51 +95,52 @@ public class EmailVerificationActivity extends AppCompatActivity implements View
     @Override public void onOtpCompleted(String otp) {
         isFullCode = true;
     }
-    private void AuthenticationToServer() {
-        String api_key = Preferences.getValue_String(EmailVerificationActivity.this, Preferences.API_Key);
-        String secret_key = Preferences.getValue_String(EmailVerificationActivity.this, Preferences.API_SecretKey);
-        loadingDialog = new LoadingDialog(EmailVerificationActivity.this, false);
-        if (CoreApp.isNetworkConnection(EmailVerificationActivity.this)) {
-            Call<AuthenticationResponse> call = RetrofitClient
-                    .getInstance().getApi().authenticateCheck(api_key, secret_key);
-            call.enqueue(new Callback<AuthenticationResponse>() {
-                @Override
-                public void onResponse(Call<AuthenticationResponse> call, Response<AuthenticationResponse> response) {
-                    AuthenticationResponse authenticationResponse = response.body();
-                    int statuscode = Integer.parseInt(authenticationResponse.getStatusCode());
-                    if (statuscode == 200) {
-                        AppConstants.api_token = authenticationResponse.getApi_access_token();
-                        if (isSendMail){
-                            isSendMail = false;
-                            sendMailToServer();
-                        }
-                        if (isValidate){
-                            isValidate = false;
-                            if (isFullCode){
-                                validateMailToServer();
-                            }else {
-                                Toast.makeText(EmailVerificationActivity.this, "you must enter the code fully", Toast.LENGTH_LONG).show();
-                            }
-                        }
-
-                    } else {
-                        Toast.makeText(EmailVerificationActivity.this, response.message(), Toast.LENGTH_LONG).show();
-                    }
-                }
-                @Override
-                public void onFailure(Call<AuthenticationResponse> call, Throwable t) {
-                    Toast.makeText(EmailVerificationActivity.this, "Server is not working now", Toast.LENGTH_LONG).show();
-                    loadingDialog.hide();
-                }
-            });
-        } else {
-            loadingDialog.hide();
-            Toast.makeText(EmailVerificationActivity.this, "No internet connection available", Toast.LENGTH_LONG).show();
-        }
-    }
+//    private void AuthenticationToServer() {
+//        String api_key = Preferences.getValue_String(EmailVerificationActivity.this, Preferences.API_Key);
+//        String secret_key = Preferences.getValue_String(EmailVerificationActivity.this, Preferences.API_SecretKey);
+//        loadingDialog = new LoadingDialog(EmailVerificationActivity.this, false);
+//        if (CoreApp.isNetworkConnection(EmailVerificationActivity.this)) {
+//            Call<AuthenticationResponse> call = RetrofitClient
+//                    .getInstance().getApi().authenticateCheck(api_key, secret_key);
+//            call.enqueue(new Callback<AuthenticationResponse>() {
+//                @Override
+//                public void onResponse(Call<AuthenticationResponse> call, Response<AuthenticationResponse> response) {
+//                    AuthenticationResponse authenticationResponse = response.body();
+//                    int statuscode = Integer.parseInt(authenticationResponse.getStatusCode());
+//                    if (statuscode == 200) {
+//                        AppConstants.api_token = authenticationResponse.getApi_access_token();
+//                        if (isSendMail){
+//                            isSendMail = false;
+//                            sendMailToServer();
+//                        }
+//                        if (isValidate){
+//                            isValidate = false;
+//                            if (isFullCode){
+//                                validateMailToServer();
+//                            }else {
+//                                Toast.makeText(EmailVerificationActivity.this, "you must enter the code fully", Toast.LENGTH_LONG).show();
+//                            }
+//                        }
+//
+//                    } else {
+//                        Toast.makeText(EmailVerificationActivity.this, response.message(), Toast.LENGTH_LONG).show();
+//                    }
+//                }
+//                @Override
+//                public void onFailure(Call<AuthenticationResponse> call, Throwable t) {
+//                    Toast.makeText(EmailVerificationActivity.this, "Server is not working now", Toast.LENGTH_LONG).show();
+//                    loadingDialog.hide();
+//                }
+//            });
+//        } else {
+//            loadingDialog.hide();
+//            Toast.makeText(EmailVerificationActivity.this, "No internet connection available", Toast.LENGTH_LONG).show();
+//        }
+//    }
 
     private void validateMailToServer() {
         final String otpCode = otpView.getText().toString();
+        loadingDialog = new LoadingDialog(EmailVerificationActivity.this, false);
         Call<CheckMailResponse> call = RetrofitClient
                 .getInstance().getApi().checkDemoEmail(jobId, otpCode);
         call.enqueue(new Callback<CheckMailResponse>() {
@@ -165,6 +168,7 @@ public class EmailVerificationActivity extends AppCompatActivity implements View
     }
     private void sendMailToServer() {
         String language = "en";
+        loadingDialog = new LoadingDialog(EmailVerificationActivity.this, false);
         Call<SendMailResponse> call = RetrofitClient
                 .getInstance().getApi().sendDemoEmail(txtEmail, language);
         call.enqueue(new Callback<SendMailResponse>() {

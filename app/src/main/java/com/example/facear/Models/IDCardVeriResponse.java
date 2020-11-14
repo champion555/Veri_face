@@ -13,7 +13,7 @@ public class IDCardVeriResponse {
     private String date_of_birth;
     private String expiration_date;
     private String nationality;
-    private String sex;
+    private String gender;
     private String first_name;
     private String last_name;
     private String valid_number;
@@ -22,7 +22,7 @@ public class IDCardVeriResponse {
 
     public IDCardVeriResponse(String job_id, String status, String statusCode, String duration, String mrz_type, String valid_score, String type,
                               String country, String number, String date_of_birth, String expiration_date, String nationality,
-                              String sex, String first_name, String last_name , String valid_number, String valid_date_of_birth, String valid_expiration_date) {
+                              String gender, String first_name, String last_name , String valid_number, String valid_date_of_birth, String valid_expiration_date) {
         this.job_id = job_id;
         this.status = status;
         this.statusCode = statusCode;
@@ -35,7 +35,7 @@ public class IDCardVeriResponse {
         this.date_of_birth = date_of_birth;
         this.expiration_date = expiration_date;
         this.nationality = nationality;
-        this.sex = sex;
+        this.gender = gender;
         this.first_name = first_name;
         this.last_name = last_name;
         this.valid_number = valid_number;
@@ -69,7 +69,7 @@ public class IDCardVeriResponse {
         return expiration_date;
     }
     public String getNationality() {return nationality;}
-    public String getSex() { return sex; }
+    public String getGender() { return gender; }
     public String getFirst_name() {
         return first_name;
     }

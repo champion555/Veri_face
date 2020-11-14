@@ -32,9 +32,15 @@ public interface Api {
     );
 
     @Multipart
-    @POST("photoFaceLiveness")
+    @POST("faceliveness")
     Call<PhotoLivenessResponse> photoLivenessCheck(
             @Part("live_image_file\"; filename=\"capturedPhoto.jpg")
+                    RequestBody file
+    );
+    @Multipart
+    @POST("videoFaceLiveness")
+    Call<PhotoLivenessResponse> videoLivenessCheck(
+            @Part("live_video_file\"; filename=\"videoLiveness.mp4")
                     RequestBody file
     );
     @FormUrlEncoded

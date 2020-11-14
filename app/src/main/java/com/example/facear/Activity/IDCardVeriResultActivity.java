@@ -38,7 +38,7 @@ public class IDCardVeriResultActivity extends AppCompatActivity {
         String firstName = idCardVeriResponse.getFirst_name();
         String lastName = idCardVeriResponse.getLast_name();
         String birth = idCardVeriResponse.getDate_of_birth();
-        String gender = idCardVeriResponse.getSex();
+        String gender = idCardVeriResponse.getGender();
         String IDDocNum = idCardVeriResponse.getNumber();
         String IDDocType = IDCardType;
         String expiration = idCardVeriResponse.getExpiration_date();
@@ -64,11 +64,15 @@ public class IDCardVeriResultActivity extends AppCompatActivity {
         }
         if (gender.isEmpty()){
             genderMark.setImageResource(R.drawable.ic_failed);
+            txtGender.setText("Male");
         }else if (gender.equals("M")){
             txtGender.setText("Male");
             genderMark.setImageResource(R.drawable.ic_success);
         }else if (gender.equals("F")){
             txtGender.setText("Female");
+            genderMark.setImageResource(R.drawable.ic_success);
+        }else {
+            txtGender.setText(gender);
             genderMark.setImageResource(R.drawable.ic_success);
         }
         if (IDDocNum.isEmpty()){

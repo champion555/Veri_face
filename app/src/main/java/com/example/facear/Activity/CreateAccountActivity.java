@@ -50,7 +50,7 @@ public class CreateAccountActivity extends AppCompatActivity {
     Button btnContinue;
     String countrycode;
     String jobId;
-    int unitedFlag = 2131165792;
+//    int unitedFlag = 2131165792;
     String firstName, lastName,email,phoneNumber,companyName,industryType,countryName,jobTitle,confirmedpassword;
     boolean isChecked = false;
 
@@ -99,7 +99,7 @@ public class CreateAccountActivity extends AppCompatActivity {
         spinner = findViewById(R.id.txtIndustryType);
         arrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,names);
         spinner.setAdapter(arrayAdapter);
-        imgFlag.setImageResource(unitedFlag);
+//        imgFlag.setImageResource(unitedFlag);
 
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override

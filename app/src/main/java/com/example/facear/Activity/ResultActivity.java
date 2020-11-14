@@ -12,24 +12,16 @@ import android.widget.TextView;
 
 import com.example.facear.FaceActivity;
 import com.example.facear.R;
+import com.example.facear.Utils.AppConstants;
 
 public class ResultActivity extends AppCompatActivity {
-    private ImageView resultMark,btBack;
-    private TextView txtResult,txtScore,txtScoreValue,txtConfirm,txtConfirmValue;
+    private ImageView resultMark,btBack,confirmCheck;
+    private TextView txtResult,txtLiveness;
+    private LinearLayout linResult;
     private Button btRetry;
-    private LinearLayout confirmLinear;
-    boolean scoreResult;
-//    boolean faceLiveness;
-//    boolean userEnrollment;
-//    boolean userAuthentication;
-    boolean isEnrollment;
-    boolean isAuthented;
-    boolean livenessForAuthentification;
     String isEnrollCheck;
-    String faceTarget;
+    String faceTarget,isEnrollment,isAuthentication;
     Bundle bundle;
-    String score;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,68 +31,75 @@ public class ResultActivity extends AppCompatActivity {
         onBack();
         bundle = getIntent().getExtras();
         faceTarget = bundle.getString("faceTarget");
-        scoreResult = bundle.getBoolean("scoreResult");
-//        faceLiveness = bundle.getBoolean("faceLiveness");
-        isEnrollment = bundle.getBoolean("isEnrollment");
-//        userEnrollment = bundle.getBoolean("userEnrollment");
         isEnrollCheck = bundle.getString("isEnrollCheck");
-//        userAuthentication = bundle.getBoolean("userAuthentication");
-        isAuthented = bundle.getBoolean("isAuthented");
-        livenessForAuthentification = bundle.getBoolean("livenessForAuthentification");
-        score = bundle.getString("score");
+        isEnrollment = bundle.getString("isEnrollment");
+        isAuthentication = bundle.getString("isAuthentication");
         if (faceTarget.equals("faceLiveness")){
-            confirmLinear.setVisibility(View.GONE);
-            if (scoreResult){
+            String result = AppConstants.photoLivenessResponse.getResult();
+            if (result.equals("LIVENESS")){
                 resultMark.setImageResource(R.drawable.ic_success);
                 txtResult.setText("Liveness Confirmed");
-                txtScoreValue.setText(score);
                 btRetry.setVisibility(View.GONE);
-            }else {
+                linResult.setVisibility(View.GONE);
+            }else if (result.equals("SPOOF")){
                 resultMark.setImageResource(R.drawable.ic_failed);
-                txtResult.setText("Spoof Detected");
-                txtScoreValue.setText(score);
+                txtResult.setText("Spoof detected");
                 btRetry.setVisibility(View.VISIBLE);
+                linResult.setVisibility(View.GONE);
+            }else{
+                resultMark.setImageResource(R.drawable.ic_unable);
+                txtResult.setText("Unable to confirm liveness");
+                btRetry.setVisibility(View.VISIBLE);
+                confirmCheck.setVisibility(View.GONE);
+                txtLiveness.setText("Image is too blurry or contain glares!");
             }
         }else if (faceTarget.equals("userEnrollment")){
-            confirmLinear.setVisibility(View.VISIBLE);
-            if (isEnrollment){
+            linResult.setVisibility(View.VISIBLE);
+            if (isEnrollment.equals("success")){
                 resultMark.setImageResource(R.drawable.ic_success);
                 txtResult.setText("Enrollment Successfully");
-                txtConfirmValue.setText("YES");
-                txtConfirm.setText("Liveness confirmed:");
-                txtScoreValue.setText(score);
+                txtLiveness.setText("Liveness Confirmed:");
+                confirmCheck.setImageResource(R.drawable.ic_confirmcheck);
                 btRetry.setVisibility(View.GONE);
-            }else {
+            }else if (isEnrollment.equals("failed")){
                 resultMark.setImageResource(R.drawable.ic_failed);
                 txtResult.setText("Enrollment Failed");
-                txtConfirmValue.setText("NO");
-                txtConfirm.setText("Liveness confirmed:");
-                txtScoreValue.setText(score);
+                txtLiveness.setText("Liveness Confirmed:");
+                confirmCheck.setImageResource(R.drawable.ic_failedconfirm);
+                btRetry.setVisibility(View.VISIBLE);
+            }else if (isEnrollment.equals("unable")){
+                resultMark.setImageResource(R.drawable.ic_failed);
+                txtResult.setText("Enrollment Failed");
+                txtLiveness.setText("Liveness Confirmed:");
+                confirmCheck.setImageResource(R.drawable.ic_unable);
                 btRetry.setVisibility(View.VISIBLE);
             }
         }else  if (faceTarget.equals("userAuthentication")){
-            confirmLinear.setVisibility(View.VISIBLE);
-            if(isAuthented){
+
+            linResult.setVisibility(View.VISIBLE);
+            if (isAuthentication.equals("success")){
                 resultMark.setImageResource(R.drawable.ic_success);
                 txtResult.setText("Authentication Successfully");
-                if (livenessForAuthentification){
-                    txtConfirmValue.setText("YES");
-                }else {
-                    txtConfirmValue.setText("No");
-                }
-                txtConfirm.setText("Liveness confirmed:");
-                txtScoreValue.setText(score);
+                txtLiveness.setText("Liveness Confirmed:");
+                confirmCheck.setImageResource(R.drawable.ic_confirmcheck);
                 btRetry.setVisibility(View.GONE);
-            } else {
+            }else if (isAuthentication.equals("no_success")){
                 resultMark.setImageResource(R.drawable.ic_failed);
                 txtResult.setText("Authentication Failed");
-                if (livenessForAuthentification){
-                    txtConfirmValue.setText("YES");
-                }else {
-                    txtConfirmValue.setText("No");
-                }
-                txtConfirm.setText("Liveness confirmed:");
-                txtScoreValue.setText(score);
+                txtLiveness.setText("Liveness Confirmed:");
+                confirmCheck.setImageResource(R.drawable.ic_confirmcheck);
+                btRetry.setVisibility(View.VISIBLE);
+            }else if (isAuthentication.equals("failed")){
+                resultMark.setImageResource(R.drawable.ic_failed);
+                txtResult.setText("Authentication Failed");
+                txtLiveness.setText("Liveness Confirmed:");
+                confirmCheck.setImageResource(R.drawable.ic_failedconfirm);
+                btRetry.setVisibility(View.VISIBLE);
+            }else if (isAuthentication.equals("unable")){
+                resultMark.setImageResource(R.drawable.ic_failed);
+                txtResult.setText("Authentication Failed");
+                txtLiveness.setText("Liveness Confirmed:");
+                confirmCheck.setImageResource(R.drawable.ic_unable);
                 btRetry.setVisibility(View.VISIBLE);
             }
         }
@@ -108,13 +107,11 @@ public class ResultActivity extends AppCompatActivity {
     private void configureView(){
         resultMark = findViewById(R.id.resultMark);
         txtResult = findViewById(R.id.txtResult);
-        txtScore = findViewById(R.id.txtScore);
-        txtScoreValue = findViewById(R.id.txtScoreValue);
         btRetry = findViewById(R.id.btRetry);
         btBack = findViewById(R.id.btBack);
-        confirmLinear = findViewById(R.id.confirmLin);
-        txtConfirm = findViewById(R.id.txtConfirm);
-        txtConfirmValue = findViewById(R.id.txtConfirmVal);
+        linResult = findViewById(R.id.linResult);
+        confirmCheck = findViewById(R.id.confirmCheck);
+        txtLiveness = findViewById(R.id.txtLiveness);
     }
     private void onRetry(){
         btRetry.setOnClickListener(new View.OnClickListener() {
@@ -141,6 +138,7 @@ public class ResultActivity extends AppCompatActivity {
                 }
             }
         });
+
     }
     private void onBack(){
         btBack.setOnClickListener(new View.OnClickListener() {

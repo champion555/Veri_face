@@ -40,10 +40,14 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.RemoteException;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.PixelCopy;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,10 +57,14 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.facear.Activity.FaceMatchResultActivity;
+import com.example.facear.Activity.IDDocCameraActivity;
+import com.example.facear.Activity.IntentActivity;
 import com.example.facear.Activity.MainActivity;
 import com.example.facear.Activity.ResultActivity;
 import com.example.facear.Models.AuthenticationResponse;
 import com.example.facear.Models.FaceMatchIDResponse;
+import com.example.facear.Models.ImageBlurryArray;
+import com.example.facear.Models.ImageCheckResponse;
 import com.example.facear.Models.PhotoLivenessResponse;
 import com.example.facear.Models.UserAuthenticationResponse;
 import com.example.facear.Models.UserEnrollmentResponse;
@@ -80,6 +88,7 @@ import com.google.android.gms.vision.face.FaceDetector;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -100,6 +109,9 @@ public final class FaceActivity extends AppCompatActivity {
   private static final int MY_CAMERA_PERMISSION_CODE = 100;
   private RelativeLayout faceView,processingView;
   private TextView txtTitle,txtMessage;
+  private ImageView btnBack,btBright;
+  private String isEnrollment;
+  private String isAuthentication;
   LoadingDialog loadingDialog;
   Bundle bundle;
   String imgFileName;
@@ -108,18 +120,17 @@ public final class FaceActivity extends AppCompatActivity {
   String faceTarget;
   File imgFile;
   boolean isdetected = false;
-  boolean scoreResult = false;
-  boolean isEnrollment = false;
-  boolean isAuthented = false;
   boolean userProfile = false;
   boolean faceMatch = false;
-  boolean livenessForAuthentification = false;
+  boolean isBright = false;
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     Log.d(TAG, "onCreate called.");
     setContentView(R.layout.activity_face);
     init();
+    onBack();
+    onBright();
     createCameraSource();
     bundle = getIntent().getExtras();
     faceTarget = bundle.getString("faceTarget");
@@ -134,6 +145,8 @@ public final class FaceActivity extends AppCompatActivity {
       txtTitle.setText("Authentication");
     }else if (faceTarget.equals("faceMatchToIDCard")){
       txtTitle.setText("Face Match ID Card");
+    }else if (faceTarget.equals("SanctionPEP")){
+      txtTitle.setText("Face Liveness");
     }
   }
   private void init(){
@@ -143,11 +156,47 @@ public final class FaceActivity extends AppCompatActivity {
     mGraphicOverlay = (GraphicOverlay) findViewById(R.id.faceOverlay);
     processingView = findViewById(R.id.processingView);
     processingView.setVisibility(View.GONE);
-    faceView.setBackground(getResources().getDrawable(R.drawable.ic_undetected3));
+//    faceView.setBackground(getResources().getDrawable(R.drawable.ic_undetected3));
+    faceView.setBackground(getResources().getDrawable(R.drawable.ic_undetected5));
     txtTitle = findViewById(R.id.txtTitle);
     txtMessage = findViewById(R.id.txtMessage);
+    btnBack = findViewById(R.id.btBack);
+    btBright = findViewById(R.id.btBright);
   }
-  @Override
+  private void onBack(){
+    btnBack.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        Intent intent = new Intent(FaceActivity.this, MainActivity.class);
+        startActivity(intent);
+      }
+    });
+  }
+  private void  onBright(){
+    btBright.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        if (isBright == false){
+          btBright.setImageResource(R.drawable.ic_highbright);
+          isBright = true;
+          WindowManager.LayoutParams lp = getWindow().getAttributes();
+          float brightness=1.0f;
+          lp.screenBrightness = brightness;
+          getWindow().setAttributes(lp);
+
+        }else {
+          btBright.setImageResource(R.drawable.ic_bright);
+          isBright = false;
+          WindowManager.LayoutParams lp = getWindow().getAttributes();
+          float brightness=0.3f;
+          lp.screenBrightness = brightness;
+          getWindow().setAttributes(lp);
+        }
+      }
+    });
+  }
+
+    @Override
   protected void onResume() {
     super.onResume();
     Log.d(TAG, "onResume called.");
@@ -262,7 +311,8 @@ public final class FaceActivity extends AppCompatActivity {
           runOnUiThread(new Runnable() {
             @RequiresApi(api = Build.VERSION_CODES.O)
             public void run() {
-              faceView.setBackground(getResources().getDrawable(R.drawable.ic_detected3));
+//              faceView.setBackground(getResources().getDrawable(R.drawable.ic_detected3));
+              faceView.setBackground(getResources().getDrawable(R.drawable.ic_detected5));
               txtMessage.setText("please keep your head in the frame to start selfie capture");
               isdetected = true;
               captureImage();
@@ -277,7 +327,8 @@ public final class FaceActivity extends AppCompatActivity {
             @RequiresApi(api = Build.VERSION_CODES.O)
             public void run() {
               isdetected = false;
-              faceView.setBackground(getResources().getDrawable(R.drawable.ic_undetected3));
+//              faceView.setBackground(getResources().getDrawable(R.drawable.ic_undetected3));
+              faceView.setBackground(getResources().getDrawable(R.drawable.ic_undetected5));
               txtMessage.setText("Please move closer the face ");
             }
           });
@@ -285,7 +336,8 @@ public final class FaceActivity extends AppCompatActivity {
       });
     }else {
       isdetected = false;
-      faceView.setBackground(getResources().getDrawable(R.drawable.ic_undetected3));
+//      faceView.setBackground(getResources().getDrawable(R.drawable.ic_undetected3));
+      faceView.setBackground(getResources().getDrawable(R.drawable.ic_undetected5));
       txtMessage.setText("Please place your face on the oval\n and get closer to the device");
     }
   }
@@ -318,7 +370,19 @@ public final class FaceActivity extends AppCompatActivity {
                   bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
                   out.flush();
                   out.close();
-                  AuthenticationToServer();
+//                  AuthenticationToServer();
+
+                  if (faceTarget.equals("faceLiveness")){
+                    uploadPhotoToServer();
+                  }else if (faceTarget.equals("userEnrollment")){
+                    uploadUserEnrollmentToServer();
+                  }else if (faceTarget.equals("userAuthentication")){
+                    uploadUserAuthenticationToServer();
+                  }else if (faceTarget.equals("faceMatchToIDCard")){
+                    FaceMatchIDCardToServer();
+                  }else if (faceTarget.equals("SanctionPEP")){
+                    Log.e("adfadsfasdf","adsadgadsfasd");
+                  }
                 } catch (Exception e) {
                   e.printStackTrace();
                 }
@@ -333,115 +397,24 @@ public final class FaceActivity extends AppCompatActivity {
     }, new Handler(handlerThread.getLooper()));
   }
 
-  private void AuthenticationToServer() {
-    String api_key = Preferences.getValue_String(FaceActivity.this, Preferences.API_Key);
-    String secret_key = Preferences.getValue_String(FaceActivity.this, Preferences.API_SecretKey);
-    loadingDialog = new LoadingDialog(FaceActivity.this, false);
-    if (CoreApp.isNetworkConnection(FaceActivity.this)) {
-      Call<AuthenticationResponse> call = RetrofitClient
-              .getInstance().getApi().authenticateCheck(api_key, secret_key);
-      call.enqueue(new Callback<AuthenticationResponse>() {
-        @Override
-        public void onResponse(Call<AuthenticationResponse> call, Response<AuthenticationResponse> response) {
-          AuthenticationResponse authenticationResponse = response.body();
-          int statuscode = Integer.parseInt(authenticationResponse.getStatusCode());
-          if (statuscode == 200) {
-            processingView.setVisibility(View.VISIBLE);
-            AppConstants.api_token = authenticationResponse.getApi_access_token();
-            if (faceTarget.equals("faceLiveness")){
-              uploadPhotoToServer();
-            }else if (faceTarget.equals("userEnrollment")){
-              uploadUserEnrollmentToServer();
-            }else if (faceTarget.equals("userAuthentication")){
-              uploadUserAuthenticationToServer();
-            }else if (faceTarget.equals("faceMatchToIDCard")){
-              FaceMatchIDCardToServer();
-            }
-          } else {
-            Toast.makeText(FaceActivity.this, response.message(), Toast.LENGTH_LONG).show();
-            isdetected = false;
-          }
-        }
-        @Override
-        public void onFailure(Call<AuthenticationResponse> call, Throwable t) {
-          Toast.makeText(FaceActivity.this, "Server is not working now", Toast.LENGTH_LONG).show();
-          loadingDialog.hide();
-          isdetected = false;
-        }
-      });
-    } else {
-      loadingDialog.hide();
-      isdetected = false;
-      Toast.makeText(FaceActivity.this, "No internet connection available", Toast.LENGTH_LONG).show();
-    }
-  }
-
   private void uploadPhotoToServer() {
-    RequestBody reqFile = RequestBody.create(MediaType.parse("image/jpeg"),
+    final RequestBody reqFile = RequestBody.create(MediaType.parse("image/jpeg"),
             imgFile);
+    loadingDialog = new LoadingDialog(FaceActivity.this, false);
+    processingView.setVisibility(View.VISIBLE);
     Call<PhotoLivenessResponse> call = RetrofitClient
             .getInstance().getApi().photoLivenessCheck(reqFile);
     call.enqueue(new Callback<PhotoLivenessResponse>() {
       @Override
       public void onResponse(Call<PhotoLivenessResponse> call, Response<PhotoLivenessResponse> response) {
         PhotoLivenessResponse photoLivenessResponse = response.body();
-        int statuscode = Integer.parseInt(photoLivenessResponse.getStatusCode());
-        if (statuscode == 200) {
-          processingView.setVisibility(View.GONE);
-          loadingDialog.hide();
-          isdetected = false;
-          Float score= Float.parseFloat(photoLivenessResponse.getScore());
-          Float threshold= Float.parseFloat(photoLivenessResponse.getThreshold());
-          Float result = score - threshold;
-          if (result > 0){
-            scoreResult = true;
-            Intent intent_liveness = new Intent(FaceActivity.this, ResultActivity.class);
-            intent_liveness.putExtra("scoreResult", scoreResult);
-            intent_liveness.putExtra("faceTarget", faceTarget);
-            intent_liveness.putExtra("score", response.body().getScore());
-            startActivity(intent_liveness);
-            finish();
-//            if (faceLiveness && userProfile){
-//              Preferences.setValue(FaceActivity.this, Preferences.isUserProfile, false);
-//              Intent intent = new Intent(FaceActivity.this, KYC_ProfileMain.class);
-//              startActivity(intent);
-//            }else if (faceLiveness && userProfile == false){
-//              scoreResult = true;
-//              Intent intent_liveness = new Intent(FaceActivity.this, ResultActivity.class);
-//              intent_liveness.putExtra("scoreResult", scoreResult);
-//              intent_liveness.putExtra("faceLiveness", faceLiveness);
-//              intent_liveness.putExtra("score", response.body().getScore());
-//              startActivity(intent_liveness);
-//              finish();
-//            }
-
-          }else{
-            scoreResult = false;
-            Intent intent_video = new Intent(FaceActivity.this, ResultActivity.class);
-            intent_video.putExtra("scoreResult", scoreResult);
-            intent_video.putExtra("faceTarget", faceTarget);
-            intent_video.putExtra("score", response.body().getScore());
-            startActivity(intent_video);
-            finish();
-//            if (faceLiveness && userProfile){
-//              Toast.makeText(FaceActivity.this, "Face Liveness is Failed, please try again", Toast.LENGTH_LONG).show();
-//            }else if (faceLiveness && userProfile == false){
-//              scoreResult = false;
-//              Intent intent_video = new Intent(FaceActivity.this, ResultActivity.class);
-//              intent_video.putExtra("scoreResult", scoreResult);
-//              intent_video.putExtra("faceLiveness", faceLiveness);
-//              intent_video.putExtra("score", response.body().getScore());
-//              startActivity(intent_video);
-//              finish();
-//            }
-
-          }
-        } else {
-          loadingDialog.hide();
-          processingView.setVisibility(View.GONE);
-          isdetected = false;
-          Toast.makeText(FaceActivity.this, response.message(), Toast.LENGTH_LONG).show();
-        }
+        String result = photoLivenessResponse.getResult();
+        processingView.setVisibility(View.GONE);
+        loadingDialog.hide();
+        AppConstants.photoLivenessResponse = photoLivenessResponse;
+        Intent intent = new Intent(FaceActivity.this,ResultActivity.class);
+        intent.putExtra("faceTarget",faceTarget);
+        startActivity(intent);
       }
 
       @Override
@@ -455,37 +428,47 @@ public final class FaceActivity extends AppCompatActivity {
 
   }
   private void uploadUserEnrollmentToServer() {
+    String aaa = Preferences.getValue_String(FaceActivity.this, Preferences.UserName);
     RequestBody reqFile = RequestBody.create(MediaType.parse("image/jpeg"), imgFile);
     RequestBody username = RequestBody.create(MediaType.parse("multipart/form-data"), Preferences.getValue_String(FaceActivity.this, Preferences.UserName));
     RequestBody force_enrollment = RequestBody.create(MediaType.parse("multipart/form-data"), isEnrollCheck);
+    loadingDialog = new LoadingDialog(FaceActivity.this, false);
+    processingView.setVisibility(View.VISIBLE);
     Call<UserEnrollmentResponse> call = RetrofitClient
             .getInstance().getApi().faceEnroll(reqFile, username, force_enrollment);
     call.enqueue(new Callback<UserEnrollmentResponse>() {
       @Override
       public void onResponse(Call<UserEnrollmentResponse> call, Response<UserEnrollmentResponse> response) {
         loadingDialog.hide();
+        processingView.setVisibility(View.GONE);
         UserEnrollmentResponse userEnrollmentResponse = response.body();
         int statuscode = Integer.parseInt(userEnrollmentResponse.getStatusCode());
         if (statuscode == 200) {
-          processingView.setVisibility(View.GONE);
-          isEnrollment = true;
+          isEnrollment = "success";
           Intent intent_enrollment = new Intent(FaceActivity.this, ResultActivity.class);
           intent_enrollment.putExtra("isEnrollment", isEnrollment);
           intent_enrollment.putExtra("faceTarget",faceTarget);
           intent_enrollment.putExtra("isEnrollCheck",isEnrollCheck);
-          intent_enrollment.putExtra("score", response.body().getLiveness_score());
           startActivity(intent_enrollment);
-          finish();
-        } else {
-          processingView.setVisibility(View.GONE);
-          isEnrollment = false;
-          Intent intent_enrollment = new Intent(FaceActivity.this, ResultActivity.class);
-          intent_enrollment.putExtra("isEnrollment", isEnrollment);
-          intent_enrollment.putExtra("faceTarget",faceTarget);
-          intent_enrollment.putExtra("isEnrollCheck",isEnrollCheck);
-          intent_enrollment.putExtra("score", response.body().getLiveness_score());
-          startActivity(intent_enrollment);
-          finish();
+        }else if (statuscode == 404){
+          String message = userEnrollmentResponse.getMessage();
+          if (message.equals("Spoof detected")){
+            isEnrollment = "failed";
+            Intent intent_enrollment = new Intent(FaceActivity.this, ResultActivity.class);
+            intent_enrollment.putExtra("isEnrollment", isEnrollment);
+            intent_enrollment.putExtra("faceTarget",faceTarget);
+            intent_enrollment.putExtra("isEnrollCheck",isEnrollCheck);
+            startActivity(intent_enrollment);
+          }else if (message.equals("Unable to confirm liveness")){
+            isEnrollment = "unable";
+            Intent intent_enrollment = new Intent(FaceActivity.this, ResultActivity.class);
+            intent_enrollment.putExtra("isEnrollment", isEnrollment);
+            intent_enrollment.putExtra("isEnrollCheck",isEnrollCheck);
+            intent_enrollment.putExtra("faceTarget",faceTarget);
+            startActivity(intent_enrollment);
+          }else {
+            Toast.makeText(FaceActivity.this, userEnrollmentResponse.getMessage(), Toast.LENGTH_LONG).show();
+          }
         }
       }
       @Override
@@ -500,6 +483,8 @@ public final class FaceActivity extends AppCompatActivity {
   private void uploadUserAuthenticationToServer(){
     RequestBody reqFile = RequestBody.create(MediaType.parse("image/jpeg"), imgFile);
     RequestBody username = RequestBody.create(MediaType.parse("multipart/form-data"), Preferences.getValue_String(FaceActivity.this, Preferences.UserName));
+    loadingDialog = new LoadingDialog(FaceActivity.this, false);
+    processingView.setVisibility(View.VISIBLE);
     Call<UserAuthenticationResponse> call = RetrofitClient
             .getInstance().getApi().userAuthentication(reqFile,username);
     call.enqueue(new Callback<UserAuthenticationResponse>() {
@@ -508,48 +493,48 @@ public final class FaceActivity extends AppCompatActivity {
         loadingDialog.hide();
         processingView.setVisibility(View.GONE);
         UserAuthenticationResponse userAuthenticationResponse = response.body();
+        AppConstants.userAuthenticationResponse = userAuthenticationResponse;
         int statuscode = Integer.parseInt(userAuthenticationResponse.getStatusCode());
         if (statuscode == 200) {
           Double authentication_score= Double.parseDouble(userAuthenticationResponse.getScore());
-          Double result = authentication_score - 0.9;
-          Float liveness_score = Float.parseFloat(userAuthenticationResponse.getLiveness_score());
-          Float liveness_threshol = Float.parseFloat(userAuthenticationResponse.getLiveness_threshold());
-          Float liveness_result = liveness_score-liveness_threshol;
-          if(result > 0){
-            isAuthented = true;
-            if (liveness_result> 0){
-              livenessForAuthentification = true;
-            }else {
-              livenessForAuthentification = false;
-            }
-            Intent intent_authentication = new Intent(FaceActivity.this, ResultActivity.class);
-            intent_authentication.putExtra("isAuthented", isAuthented);
-            intent_authentication.putExtra("faceTarget", faceTarget);
-            intent_authentication.putExtra("livenessForAuthentification",livenessForAuthentification);
-            intent_authentication.putExtra("score", response.body().getScore());
-            startActivity(intent_authentication);
-            finish();
+          Double authentication_threshold= Double.parseDouble(userAuthenticationResponse.getFace_matching_threshold());
+          Double authe_result = authentication_score - authentication_threshold;
+          if (authe_result > 0){
+            isAuthentication = "success";
+            Intent intent = new Intent(FaceActivity.this, ResultActivity.class);
+            intent.putExtra("isAuthentication", isAuthentication);
+            intent.putExtra("faceTarget",faceTarget);
+            startActivity(intent);
           }else {
-            isAuthented = false;
-            if (liveness_result> 0){
-              livenessForAuthentification = true;
-            }else {
-              livenessForAuthentification = false;
-            }
-            Intent intent_authentication = new Intent(FaceActivity.this, ResultActivity.class);
-            intent_authentication.putExtra("isAuthented", isAuthented);
-            intent_authentication.putExtra("faceTarget", faceTarget);
-            intent_authentication.putExtra("livenessForAuthentification",livenessForAuthentification);
-            intent_authentication.putExtra("score", response.body().getScore());
-            startActivity(intent_authentication);
-            finish();
+            isAuthentication = "no_success";
+            Intent intent = new Intent(FaceActivity.this, ResultActivity.class);
+            intent.putExtra("isAuthentication", isAuthentication);
+            intent.putExtra("faceTarget",faceTarget);
+            startActivity(intent);
           }
-
-        } else if (statuscode == 404){
-          livenessFailedMessage();
-        }else {
-          showAlert();
+        }else if (statuscode == 404){
+          String message = userAuthenticationResponse.getMessage();
+          if (message.equals("Spoof detected")){
+            isAuthentication = "failed";
+            Intent intent = new Intent(FaceActivity.this, ResultActivity.class);
+            intent.putExtra("isAuthentication", isAuthentication);
+            intent.putExtra("faceTarget",faceTarget);
+            startActivity(intent);
+          }else if (message.equals("Unable to confirm liveness")){
+            isAuthentication = "unable";
+            Intent intent = new Intent(FaceActivity.this, ResultActivity.class);
+            intent.putExtra("isAuthentication", isAuthentication);
+            intent.putExtra("faceTarget",faceTarget);
+            startActivity(intent);
+          }else {
+            Toast.makeText(FaceActivity.this, userAuthenticationResponse.getMessage(), Toast.LENGTH_LONG).show();
+          }
         }
+
+//        Intent intent = new Intent(FaceActivity.this,ResultActivity.class);
+//        intent.putExtra("faceTarget",faceTarget);
+//        startActivity(intent);
+
       }
       @Override
       public void onFailure(Call<UserAuthenticationResponse> call, Throwable t) {
@@ -566,6 +551,8 @@ public final class FaceActivity extends AppCompatActivity {
     File target_file = new File(target_file_path);
     RequestBody sourceFile = RequestBody.create(MediaType.parse("image/jpeg"), imgFile);
     RequestBody targetFile = RequestBody.create(MediaType.parse("image/jpeg"), target_file);
+    loadingDialog = new LoadingDialog(FaceActivity.this, false);
+    processingView.setVisibility(View.VISIBLE);
     Call<FaceMatchIDResponse> call = RetrofitClient
             .getInstance().getApi().faceMatchIDCard(sourceFile, targetFile);
     call.enqueue(new Callback<FaceMatchIDResponse>() {
@@ -605,7 +592,6 @@ public final class FaceActivity extends AppCompatActivity {
       public void onClick(DialogInterface dialog, int which) {
         Intent intent = new Intent(FaceActivity.this, MainActivity.class);
         startActivity(intent);
-        finish();
       }
     });
     dialog.show();

@@ -56,36 +56,60 @@ public class IDDocMainActivity extends AppCompatActivity implements View.OnClick
                 AppConstants.countryName = countryName;
                 if (IDDocType.equals("Passport")){
                     if (Target.equals("FaceMatchToIDDoc")){
-                        Intent intent_passport = new Intent(IDDocMainActivity.this, FaceMatchPassportActivity.class);
+                        Intent intent_passport = new Intent(IDDocMainActivity.this, IDDocCameraActivity.class);
+                        intent_passport.putExtra("CardType","faceMatch_Passport");
                         startActivity(intent_passport);
                     }else if (Target.equals("IDDocVerification")){
-                        Intent intent_passport = new Intent(IDDocMainActivity.this, PassportVerificatioinActivity.class);
+                        Intent intent_passport = new Intent(IDDocMainActivity.this, IDDocCameraActivity.class);
+                        intent_passport.putExtra("CardType","Passport");
+                        startActivity(intent_passport);
+                    }else if (Target.equals("SanctionsPEP")){
+                        Intent intent_passport = new Intent(IDDocMainActivity.this, SanctionCameraActivity.class);
+                        intent_passport.putExtra("CardType","Passport");
                         startActivity(intent_passport);
                     }
                 }else if (IDDocType.equals("IDCard")){
                     if (Target.equals("FaceMatchToIDDoc")){
-                        Intent intent_passport = new Intent(IDDocMainActivity.this, FaceMatchIDCardActivity.class);
-                        startActivity(intent_passport);
+                        Intent intent_id = new Intent(IDDocMainActivity.this, IDDocCameraActivity.class);
+                        intent_id.putExtra("CardType","FaceMatch_FrontCard");
+                        startActivity(intent_id);
                     }else if (Target.equals("IDDocVerification")){
-                        Intent intent_id = new Intent(IDDocMainActivity.this, IDCardVerificationActivity.class);
+                        Intent intent_id = new Intent(IDDocMainActivity.this, IDDocCameraActivity.class);
+                        intent_id.putExtra("CardType","IDcard_FrontCard");
+                        startActivity(intent_id);
+                    }else if (Target.equals("SanctionsPEP")){
+                        Intent intent_id = new Intent(IDDocMainActivity.this, SanctionCameraActivity.class);
+                        intent_id.putExtra("CardType","IDCard");
                         startActivity(intent_id);
                     }
 
                 }else if (IDDocType.equals("DrivingLicense")){
                     if (Target.equals("FaceMatchToIDDoc")){
-                        Intent intent_passport = new Intent(IDDocMainActivity.this, FaceMatchDrivingActivity.class);
-                        startActivity(intent_passport);
+                        Intent intent_driving = new Intent(IDDocMainActivity.this, IDDocCameraActivity.class);
+                        intent_driving.putExtra("CardType","faceMatch_FrontDriving");
+                        startActivity(intent_driving);
                     }else if (Target.equals("IDDocVerification")){
-                        Intent intent_driving = new Intent(IDDocMainActivity.this, DrivingVerificationActivity.class);
+                        Intent intent_driving = new Intent(IDDocMainActivity.this, IDDocCameraActivity.class);
+                        intent_driving.putExtra("CardType","Driving_FrontCard");
+                        startActivity(intent_driving);
+                    }else if (Target.equals("SanctionsPEP")){
+                        Intent intent_driving = new Intent(IDDocMainActivity.this, SanctionCameraActivity.class);
+                        intent_driving.putExtra("CardType","DrivingLicense");
                         startActivity(intent_driving);
                     }
 
                 }else if (IDDocType.equals("ResidentPermit")){
                     if (Target.equals("FaceMatchToIDDoc")){
-                        Intent intent_passport = new Intent(IDDocMainActivity.this, FaceMatchResidentActivity.class);
-                        startActivity(intent_passport);
+                        Intent intent_resident = new Intent(IDDocMainActivity.this, IDDocCameraActivity.class);
+                        intent_resident.putExtra("CardType","faceMatch_frontResident");
+                        startActivity(intent_resident);
                     }else if (Target.equals("IDDocVerification")){
-                        Intent intent_resident = new Intent(IDDocMainActivity.this, ResidentVerificationActivity.class);
+                        Intent intent_resident = new Intent(IDDocMainActivity.this, IDDocCameraActivity.class);
+                        intent_resident.putExtra("CardType","Resident_Front");
+                        startActivity(intent_resident);
+                    }else if (Target.equals("SanctionsPEP")){
+                        Intent intent_resident = new Intent(IDDocMainActivity.this, SanctionCameraActivity.class);
+                        intent_resident.putExtra("CardType","ResidentPermit");
                         startActivity(intent_resident);
                     }
 

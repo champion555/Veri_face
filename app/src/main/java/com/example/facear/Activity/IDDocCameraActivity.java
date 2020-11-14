@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,6 +25,7 @@ import android.widget.Toast;
 
 import com.example.facear.BackgroundService.BackgroundService;
 import com.example.facear.CustomView.IDDocView;
+import com.example.facear.FaceActivity;
 import com.example.facear.IDDocCamera.CameraPreview;
 import com.example.facear.IDDocCamera.CameraUtils;
 import com.example.facear.Models.AuthenticationResponse;
@@ -38,6 +41,7 @@ import com.example.facear.Utils.Preferences;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.lang.annotation.Target;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -51,8 +55,8 @@ import retrofit2.Response;
 public class IDDocCameraActivity extends AppCompatActivity implements View.OnClickListener{
     private CameraPreview cameraPreview;
     private ImageView btnCapture,btnFlash;
-    private TextView txtMessage,txtTitle,txtErrorMessage;
-    private ImageView imgCrop;
+    private TextView txtMessage,txtTitle,txtErrorMessage,title,topTitle, txtCountry;
+    private ImageView imgCrop,btnBack;
     private RelativeLayout cropRelative,cameraRelative;
     private LinearLayout linErrorMessage;
     private Button btnTake,btnRetake;
@@ -60,10 +64,15 @@ public class IDDocCameraActivity extends AppCompatActivity implements View.OnCli
     private static final String TAG = IDDocCameraActivity.class.getSimpleName();
     private Bitmap demoBitmap, mCropBitmap;
     private Bundle bundle;
-//    private LoadingDialog loadingDialog;
+    private Bitmap frontbitmap,backbitmap;
+    int width;
+    String mergedPhotoFileName,mergedPhotoFilePath, docType;
+    File mergedPhotoFile;
+    private LoadingDialog loadingDialog;
     String imgFileName,imgFilePath,CardType;
     File imgFile;
     File demoFile;
+    RequestBody reqFile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,59 +92,48 @@ public class IDDocCameraActivity extends AppCompatActivity implements View.OnCli
         layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
         cameraPreview.setLayoutParams(layoutParams);
         linErrorMessage.setVisibility(View.GONE);
+        txtCountry.setText(AppConstants.countryName);
         if (CardType.equals("FaceMatch_FrontCard")){
+            topTitle.setText("ID Card");
             txtTitle.setText("Powered by BIOMIID");
+            title.setText("Front ID Card");
             txtMessage.setText("Place the Front Page of  ID Card inside \n the Frame and take the photo");
-        }else if (CardType.equals("FaceMatch_BackCard")){
+        }else if (CardType.equals("faceMatch_Passport")){
             txtTitle.setText("Powered by BIOMIID");
-            txtMessage.setText("Place the Back page of ID Card inside \n the Frame and take the photo");
-        }
-        if (CardType.equals("faceMatch_Passport")){
-            txtTitle.setText("Powered by BIOMIID");
+            topTitle.setText("Passport");
+            title.setText("Passport");
             txtMessage.setText("Place the Passport inside the Frame and take the photo");
-        }
-        if (CardType.equals("faceMatch_FrontDriving")){
+        }else if (CardType.equals("faceMatch_FrontDriving")){
             txtTitle.setText("Powered by BIOMIID");
+            topTitle.setText("Driving License");
+            title.setText("Front Driving License");
             txtMessage.setText("Place the Front Page of  Driving License \n inside the Frame and take the photo");
-        }else if (CardType.equals("faceMatch_BackDriving")){
+        }else if (CardType.equals("faceMatch_frontResident")){
             txtTitle.setText("Powered by BIOMIID");
-            txtMessage.setText("Place the Back Page of  Driving License \n inside the Frame and take the photo");
-        }
-        if (CardType.equals("faceMatch_frontResident")){
-            txtTitle.setText("Powered by BIOMIID");
+            topTitle.setText("Resident Permit");
+            title.setText("Front Resident Permit");
             txtMessage.setText("Place the Front Page of  Resident Permit \n inside the Frame and take the photo");
-        }else if (CardType.equals("faceMatch_backResident")){
+        }else if (CardType.equals("IDcard_FrontCard")){
             txtTitle.setText("Powered by BIOMIID");
-            txtMessage.setText("Place the Back Page of  Resident Permit \n inside the Frame and take the photo");
-        }
-
-
-        if (CardType.equals("IDcard_FrontCard")){
-            txtTitle.setText("Powered by BIOMIID");
+            topTitle.setText("ID Card");
+            title.setText("Front ID Card");
             txtMessage.setText("Place the Front Page of  ID Card inside \n the Frame and take the photo");
-        }else if (CardType.equals("IDcard_BackCard")){
+        }else if (CardType.equals("Passport")){
             txtTitle.setText("Powered by BIOMIID");
-            txtMessage.setText("Place the Back page of ID Card inside \n the Frame and take the photo");
-        }
-        if (CardType.equals("Passport")){
-            txtTitle.setText("Powered by BIOMIID");
+            topTitle.setText("Passport");
+            title.setText("Passport");
             txtMessage.setText("Place the Passport inside the Frame and take the photo");
-        }
-        if (CardType.equals("Driving_FrontCard")){
+        }else if (CardType.equals("Driving_FrontCard")){
             txtTitle.setText("Powered by BIOMIID");
+            topTitle.setText("Driving License");
+            title.setText("Front Driving License");
             txtMessage.setText("Place the Front Page of  Driving License \n inside the Frame and take the photo");
-        }else if (CardType.equals("Driving_BackCard")){
+        }else if (CardType.equals("Resident_Front")){
             txtTitle.setText("Powered by BIOMIID");
-            txtMessage.setText("Place the Back Page of  Driving License \n inside the Frame and take the photo");
-        }
-        if (CardType.equals("Resident_Front")){
-            txtTitle.setText("Powered by BIOMIID");
+            topTitle.setText("Resident Permit");
+            title.setText("Front Resident Permit");
             txtMessage.setText("Place the Front Page of  Resident Permit \n inside the Frame and take the photo");
-        }else if (CardType.equals("Resident_Back")){
-            txtTitle.setText("Powered by BIOMIID");
-            txtMessage.setText("Place the Back Page of  Resident Permit \n inside the Frame and take the photo");
         }
-
     }
     private void init(){
         cameraPreview = (CameraPreview) findViewById(R.id.camera_surface);
@@ -151,6 +149,10 @@ public class IDDocCameraActivity extends AppCompatActivity implements View.OnCli
         btnFlash = findViewById(R.id.imgFlash);
         linErrorMessage = findViewById(R.id.linMessage);
         txtErrorMessage = findViewById(R.id.errorMessage);
+        title = findViewById(R.id.title);
+        btnBack = findViewById(R.id.btnBack);
+        topTitle = findViewById(R.id.topTitle);
+        txtCountry = findViewById(R.id.txtCountry);
     }
     private void listener(){
         cameraPreview.setOnClickListener(this);
@@ -158,6 +160,7 @@ public class IDDocCameraActivity extends AppCompatActivity implements View.OnCli
         btnTake.setOnClickListener(this);
         btnRetake.setOnClickListener(this);
         btnFlash.setOnClickListener(this);
+        btnBack.setOnClickListener(this);
     }
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void captureImage() {
@@ -188,7 +191,7 @@ public class IDDocCameraActivity extends AppCompatActivity implements View.OnCli
                                     demoBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
                                     out.flush();
                                     out.close();
-                                    AuthenticationToServer();
+                                    ImageCheckToServer();
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }
@@ -237,73 +240,93 @@ public class IDDocCameraActivity extends AppCompatActivity implements View.OnCli
                     mCropBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
                     out.flush();
                     out.close();
-//                            Toast.makeText(CameraActivity.this, imgFilePath, Toast.LENGTH_LONG).show();
-                    //FaceMatch To ID Document
+
                     if (CardType.equals("faceMatch_Passport")){
-                        AppConstants.faceMatch_passportPath = imgFilePath;
-                        Intent intent = new Intent(IDDocCameraActivity.this, FaceMatchPassportActivity.class);
+                        Preferences.setValue(IDDocCameraActivity.this, Preferences.FACEMATCHIDPATH, imgFilePath);
+                        Intent intent = new Intent(IDDocCameraActivity.this, IntentActivity.class);
+                        intent.putExtra("intentTarget","faceMatchID");
                         startActivity(intent);
+                        finish();
                     }
                     if (CardType.equals("FaceMatch_FrontCard")){
-                        AppConstants.faceMatch_frontCardPath = imgFilePath;
-                        Intent intent = new Intent(IDDocCameraActivity.this, FaceMatchIDCardActivity.class);
-                        startActivity(intent);
+//                        AppConstants.faceMatch_frontCardPath = imgFilePath;
+                        frontbitmap = BitmapFactory.decodeFile(imgFilePath);
+                        CardType = "FaceMatch_BackCard";
+                        topTitle.setText("ID Card");
+                        title.setText("Back ID Card");
+                        txtMessage.setText("Place the Back page of ID Card inside \n the Frame and take the photo");
+
                     }else if(CardType.equals("FaceMatch_BackCard")) {
-                        AppConstants.faceMatch_backCardPath = imgFilePath;
-                        Intent intent = new Intent(IDDocCameraActivity.this, FaceMatchIDCardActivity.class);
-                        startActivity(intent);
+                        backbitmap = BitmapFactory.decodeFile(imgFilePath);
+                        createSingleImageFromMultipleImages(frontbitmap,backbitmap);
                     }
                     if (CardType.equals("faceMatch_FrontDriving")){
-                        AppConstants.faceMatch_frontDriving = imgFilePath;
-                        Intent intent = new Intent(IDDocCameraActivity.this, FaceMatchDrivingActivity.class);
-                        startActivity(intent);
+                        frontbitmap = BitmapFactory.decodeFile(imgFilePath);
+                        CardType = "faceMatch_BackDriving";
+                        topTitle.setText("Driving License");
+                        title.setText("Back Driving License");
+                        txtMessage.setText("Place the Back page of Driving License inside \n the Frame and take the photo");
                     }else if (CardType.equals("faceMatch_BackDriving")){
-                        AppConstants.faceMatch_backDriving = imgFilePath;
-                        Intent intent = new Intent(IDDocCameraActivity.this, FaceMatchDrivingActivity.class);
-                        startActivity(intent);
+                        backbitmap = BitmapFactory.decodeFile(imgFilePath);
+                        createSingleImageFromMultipleImages(frontbitmap,backbitmap);
                     }
                     if (CardType.equals("faceMatch_frontResident")){
-                        AppConstants.faceMatch_frontResident = imgFilePath;
-                        Intent intent = new Intent(IDDocCameraActivity.this, FaceMatchResidentActivity.class);
-                        startActivity(intent);
+                        frontbitmap = BitmapFactory.decodeFile(imgFilePath);
+                        CardType = "faceMatch_backResident";
+                        topTitle.setText("Resident Permit");
+                        title.setText("Back Resident Permit");
+                        txtMessage.setText("Place the Back page of Resident Permit inside \n the Frame and take the photo");
                     }else if (CardType.equals("faceMatch_backResident")){
-                        AppConstants.faceMatch_backResident = imgFilePath;
-                        Intent intent = new Intent(IDDocCameraActivity.this, FaceMatchResidentActivity.class);
-                        startActivity(intent);
+                        backbitmap = BitmapFactory.decodeFile(imgFilePath);
+                        createSingleImageFromMultipleImages(frontbitmap,backbitmap);
                     }
                     //Verification ID Document
                     if (CardType.equals("IDcard_FrontCard")){
-                        AppConstants.IDCardVeri_frontCardPath = imgFilePath;
-                        Intent intent = new Intent(IDDocCameraActivity.this,IDCardVerificationActivity.class);
-                        startActivity(intent);
+                        frontbitmap = BitmapFactory.decodeFile(imgFilePath);
+                        CardType = "IDcard_BackCard";
+                        topTitle.setText("ID Card");
+                        title.setText("Back ID Card");
+                        txtMessage.setText("Place the Back page of ID Card inside \n the Frame and take the photo");
                     }else if (CardType.equals("IDcard_BackCard")){
-                        AppConstants.IDCardVeri_backCardPath = imgFilePath;
-                        Intent intent = new Intent(IDDocCameraActivity.this,IDCardVerificationActivity.class);
-                        startActivity(intent);
+                        backbitmap = BitmapFactory.decodeFile(imgFilePath);
+                        createSingleImageFromMultipleImages(frontbitmap,backbitmap);
                     }
                     if (CardType.equals("Passport")){
-                        AppConstants.PassportVeriPath = imgFilePath;
-                        Intent intent = new Intent(IDDocCameraActivity.this,PassportVerificatioinActivity.class);
-                        startActivity(intent);
+                        VerificationIDCardToServer();
                     }
                     if (CardType.equals("Driving_FrontCard")){
-                        AppConstants.DrivingVeri_frontCardPath = imgFilePath;
-                        Intent intent = new Intent(IDDocCameraActivity.this,DrivingVerificationActivity.class);
-                        startActivity(intent);
+                        frontbitmap = BitmapFactory.decodeFile(imgFilePath);
+                        CardType = "Driving_BackCard";
+                        topTitle.setText("Driving License");
+                        title.setText("Back Driving License");
+                        txtMessage.setText("Place the Back page of Driving License inside \n the Frame and take the photo");
                     }else if (CardType.equals("Driving_BackCard")){
-                        AppConstants.DrivingVeri_backCardPath = imgFilePath;
-                        Intent intent = new Intent(IDDocCameraActivity.this,DrivingVerificationActivity.class);
-                        startActivity(intent);
+                        backbitmap = BitmapFactory.decodeFile(imgFilePath);
+                        createSingleImageFromMultipleImages(frontbitmap,backbitmap);
                     }
                     if (CardType.equals("Resident_Front")){
-                        AppConstants.ResidentVeri_frontCardPath = imgFilePath;
-                        Intent intent = new Intent(IDDocCameraActivity.this,ResidentVerificationActivity.class);
-                        startActivity(intent);
+                        frontbitmap = BitmapFactory.decodeFile(imgFilePath);
+                        CardType = "Resident_Back";
+                        topTitle.setText("Resident Permit");
+                        title.setText("Back Resident Permit");
+                        txtMessage.setText("Place the Back page of Resident Permit inside \n the Frame and take the photo");
                     }else if (CardType.equals("Resident_Back")){
-                        AppConstants.ResidentVeri_backCardPath = imgFilePath;
-                        Intent intent = new Intent(IDDocCameraActivity.this,ResidentVerificationActivity.class);
-                        startActivity(intent);
+                        backbitmap = BitmapFactory.decodeFile(imgFilePath);
+                        createSingleImageFromMultipleImages(frontbitmap,backbitmap);
                     }
+
+
+                    cameraRelative.setVisibility(View.VISIBLE);
+                    cropRelative.setVisibility(View.GONE);
+                    btnCapture.setVisibility(View.VISIBLE);
+                    btnRetake.setVisibility(View.GONE);
+                    btnTake.setVisibility(View.GONE);
+                    linErrorMessage.setVisibility(View.GONE);
+                    btnFlash.setVisibility(View.VISIBLE);
+                    txtTitle.setText("Powered by BIOMID");
+                    txtMessage.setVisibility(View.VISIBLE);
+                    title.setVisibility(View.VISIBLE);
+                    txtCountry.setVisibility(View.VISIBLE);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -318,56 +341,72 @@ public class IDDocCameraActivity extends AppCompatActivity implements View.OnCli
                 btnFlash.setVisibility(View.VISIBLE);
                 txtTitle.setText("Powered by BIOMID");
                 txtMessage.setVisibility(View.VISIBLE);
+                title.setVisibility(View.VISIBLE);
+                txtCountry.setVisibility(View.VISIBLE);
                 // face Match To ID Docuement
                 if (CardType.equals("faceMatch_Passport")){
                     txtTitle.setText("Powered by BIOMIID");
+                    topTitle.setText("Passport");
                     txtMessage.setText("Place the Passport inside the Frame and take the photo");
                 }
                 if (CardType.equals("FaceMatch_FrontCard")){
                     txtTitle.setText("Powered by BIOMID");
+                    topTitle.setText("ID Card");
                     txtMessage.setText("Place the Front Page of  ID Card inside \n the Frame and take the photo");
                 }else if (CardType.equals("FaceMatch_BackCard")){
                     txtTitle.setText("Powered by BIOMID");
+                    topTitle.setText("ID Card");
                     txtMessage.setText("Place the Back page of ID Card inside \n the Frame and take the photo");
                 }
                 if (CardType.equals("faceMatch_FrontDriving")){
                     txtTitle.setText("Powered by BIOMIID");
+                    topTitle.setText("Driving License");
                     txtMessage.setText("Place the Front Page of  Driving License \n inside the Frame and take the photo");
                 }else if (CardType.equals("faceMatch_BackDriving")){
                     txtTitle.setText("Powered by BIOMIID");
+                    topTitle.setText("Driving License");
                     txtMessage.setText("Place the Back Page of  Driving License \n inside the Frame and take the photo");
                 }
                 if (CardType.equals("faceMatch_frontResident")){
                     txtTitle.setText("Powered by BIOMIID");
+                    topTitle.setText("Resident Permit");
                     txtMessage.setText("Place the Front Page of  Resident Permit \n inside the Frame and take the photo");
                 }else if (CardType.equals("faceMatch_backResident")){
                     txtTitle.setText("Powered by BIOMIID");
+                    topTitle.setText("Resident Permit");
                     txtMessage.setText("Place the Back Page of  Resident Permit \n inside the Frame and take the photo");
                 }
                 // Verification ID Docuement
                 if (CardType.equals("IDcard_FrontCard")){
                     txtTitle.setText("Powered by BIOMID");
+                    topTitle.setText("ID Card");
                     txtMessage.setText("Place the Front Page of  ID Card inside \n the Frame and take the photo");
                 }else if (CardType.equals("IDcard_BackCard")){
                     txtTitle.setText("Powered by BIOMID");
+                    topTitle.setText("ID Card");
                     txtMessage.setText("Place the Back page of ID Card inside \n the Frame and take the photo");
                 }
                 if (CardType.equals("Passport")){
                     txtTitle.setText("Powered by BIOMID");
+                    topTitle.setText("Passport");
                     txtMessage.setText("Place the Passport inside the Frame and take the photo");
                 }
                 if (CardType.equals("Driving_FrontCard")){
                     txtTitle.setText("Powered by BIOMID");
+                    topTitle.setText("Driving License");
                     txtMessage.setText("Place the Front Page of  Driving License \n inside the Frame and take the photo");
                 }else if (CardType.equals("Driving_BackCard")){
                     txtTitle.setText("Powered by BIOMID");
+                    topTitle.setText("Driving License");
                     txtMessage.setText("Place the Back Page of  Driving License \n inside the Frame and take the photo");
                 }
                 if (CardType.equals("Resident_Front")){
                     txtTitle.setText("Powered by BIOMID");
+                    topTitle.setText("Resident Permit");
                     txtMessage.setText("Place the Front Page of  Resident Permit \n inside the Frame and take the photo");
                 }else if (CardType.equals("Resident_Back")){
                     txtTitle.setText("Powered by BIOMID");
+                    topTitle.setText("Resident Permit");
                     txtMessage.setText("Place the Back Page of  Resident Permit \n inside the Frame and take the photo");
                 }
                 break;
@@ -379,8 +418,57 @@ public class IDDocCameraActivity extends AppCompatActivity implements View.OnCli
                     Toast.makeText(this, "The device does not support flash", Toast.LENGTH_SHORT).show();
                 }
                 break;
+            case R.id.btnBack:
+                if (CardType.equals("faceMatch_Passport") || CardType.equals("FaceMatch_FrontCard") ||CardType.equals("FaceMatch_BackCard")|| CardType.equals("faceMatch_FrontDriving") ||CardType.equals("faceMatch_BackDriving")||CardType.equals("faceMatch_frontResident")||CardType.equals("faceMatch_backResident")){
+                    Intent intent = new Intent(IDDocCameraActivity.this,IDDocMainActivity.class);
+                    intent.putExtra("Target", "FaceMatchToIDDoc");
+                    startActivity(intent);
+                }else if (CardType.equals("IDcard_FrontCard")||CardType.equals("IDcard_BackCard")||CardType.equals("Passport")||CardType.equals("Driving_FrontCard")||CardType.equals("Driving_BackCard")||CardType.equals("Resident_Front")||CardType.equals("Resident_Back")) {
+                    Intent intent = new Intent(IDDocCameraActivity.this,IDDocMainActivity.class);
+                    intent.putExtra("Target", "IDDocVerification");
+                    startActivity(intent);
+                }
+                break;
         }
     }
+
+    private Bitmap createSingleImageFromMultipleImages(Bitmap firstImage, Bitmap secondImage) {
+        if(firstImage.getWidth() < secondImage.getWidth()){
+            width = firstImage.getWidth();
+        }else {
+            width = secondImage.getWidth();
+        }
+        Bitmap resultPhoto = Bitmap.createBitmap(width, firstImage.getHeight()+secondImage.getHeight(), firstImage.getConfig());
+        Canvas canvas = new Canvas(resultPhoto);
+        canvas.drawBitmap(firstImage, 0f, 0f, null);
+        canvas.drawBitmap(secondImage, 0f, firstImage.getHeight(), null);
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        mergedPhotoFileName = "mergedCard"+timeStamp+"_"+".jpg";
+        mergedPhotoFilePath = IDDocCameraActivity.this.getFilesDir().getPath().toString() + "/" + mergedPhotoFileName;
+        mergedPhotoFile = new File(mergedPhotoFilePath);
+        if (mergedPhotoFile.exists())
+            mergedPhotoFile.delete();
+        try {
+            FileOutputStream out = new FileOutputStream(mergedPhotoFile);
+            Log.e("out", String.valueOf(out));
+            resultPhoto.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            out.flush();
+            out.close();
+            if(CardType.equals("FaceMatch_BackCard")||CardType.equals("faceMatch_BackDriving")||CardType.equals("faceMatch_backResident")){
+                Preferences.setValue(IDDocCameraActivity.this, Preferences.FACEMATCHIDPATH, mergedPhotoFilePath);
+                Intent intent = new Intent(IDDocCameraActivity.this, IntentActivity.class);
+                intent.putExtra("intentTarget","faceMatchID");
+                startActivity(intent);
+                finish();
+            }else if (CardType.equals("IDcard_BackCard")||CardType.equals("Driving_BackCard")||CardType.equals("Resident_Back")){
+                VerificationIDCardToServer();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return resultPhoto;
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -395,36 +483,6 @@ public class IDDocCameraActivity extends AppCompatActivity implements View.OnCli
             cameraPreview.onStop();
         }
     }
-    private void AuthenticationToServer() {
-        String api_key = Preferences.getValue_String(IDDocCameraActivity.this, Preferences.API_Key);
-        String secret_key = Preferences.getValue_String(IDDocCameraActivity.this, Preferences.API_SecretKey);
-//        loadingDialog = new LoadingDialog(IDDocCameraActivity.this, false);
-        if (CoreApp.isNetworkConnection(IDDocCameraActivity.this)) {
-            Call<AuthenticationResponse> call = RetrofitClient
-                    .getInstance().getApi().authenticateCheck(api_key, secret_key);
-            call.enqueue(new Callback<AuthenticationResponse>() {
-                @Override
-                public void onResponse(Call<AuthenticationResponse> call, Response<AuthenticationResponse> response) {
-                    AuthenticationResponse authenticationResponse = response.body();
-                    int statuscode = Integer.parseInt(authenticationResponse.getStatusCode());
-                    if (statuscode == 200) {
-                        AppConstants.api_token = authenticationResponse.getApi_access_token();
-                        ImageCheckToServer();
-                    } else {
-                        Toast.makeText(IDDocCameraActivity.this, response.message(), Toast.LENGTH_LONG).show();
-                    }
-                }
-                @Override
-                public void onFailure(Call<AuthenticationResponse> call, Throwable t) {
-                    Toast.makeText(IDDocCameraActivity.this, "Server is not working now", Toast.LENGTH_LONG).show();
-//                    loadingDialog.hide();
-                }
-            });
-        } else {
-//            loadingDialog.hide();
-            Toast.makeText(IDDocCameraActivity.this, "No internet connection available", Toast.LENGTH_LONG).show();
-        }
-    }
     private void ImageCheckToServer() {
         RequestBody reqFile = RequestBody.create(MediaType.parse("image/jpeg"),
                 demoFile);
@@ -435,6 +493,8 @@ public class IDDocCameraActivity extends AppCompatActivity implements View.OnCli
             public void onResponse(Call<ImageCheckResponse> call, Response<ImageCheckResponse> response) {
                 ImageCheckResponse imageCheckResponse = response.body();
                 int statuscode = Integer.parseInt(imageCheckResponse.getStatusCode());
+                txtCountry.setVisibility(View.GONE);
+                topTitle.setText("Image Preview");
 //                ImageBlurryArray err = imageCheckResponse.getErrorList().add();
                 if (statuscode == 200) {
 //                    loadingDialog.hide();
@@ -445,6 +505,7 @@ public class IDDocCameraActivity extends AppCompatActivity implements View.OnCli
                     linErrorMessage.setVisibility(View.GONE);
                     btnRetake.setVisibility(View.VISIBLE);
                     btnTake.setVisibility(View.VISIBLE);
+                    title.setVisibility(View.VISIBLE);
                     txtTitle.setText("Preview Captured ID Document");
                     txtMessage.setText("Make sure the ID Document image is clear to read");
                     imgCrop.setImageBitmap(demoBitmap);
@@ -470,6 +531,7 @@ public class IDDocCameraActivity extends AppCompatActivity implements View.OnCli
                     btnCapture.setVisibility(View.GONE);
                     btnFlash.setVisibility(View.GONE);
                     txtMessage.setVisibility(View.GONE);
+                    title.setVisibility(View.GONE);
                     btnRetake.setVisibility(View.VISIBLE);
                     btnTake.setVisibility(View.GONE);
                     linErrorMessage.setVisibility(View.VISIBLE);
@@ -482,6 +544,51 @@ public class IDDocCameraActivity extends AppCompatActivity implements View.OnCli
             public void onFailure(Call<ImageCheckResponse> call, Throwable t) {
                 Toast.makeText(IDDocCameraActivity.this, "Server is not working now", Toast.LENGTH_LONG).show();
 //                loadingDialog.hide();
+            }
+        });
+
+    }
+    private void VerificationIDCardToServer() {
+        if (CardType.equals("Passport")){
+            reqFile = RequestBody.create(MediaType.parse("image/jpeg"),
+                    imgFile);
+        }else{
+            reqFile = RequestBody.create(MediaType.parse("image/jpeg"),
+                    mergedPhotoFile);
+        }
+        loadingDialog = new LoadingDialog(IDDocCameraActivity.this, false);
+        Call<IDCardVeriResponse> call = RetrofitClient
+                .getInstance().getApi().IDCardVerification(reqFile);
+        call.enqueue(new Callback<IDCardVeriResponse>() {
+            @Override
+            public void onResponse(Call<IDCardVeriResponse> call, Response<IDCardVeriResponse> response) {
+                IDCardVeriResponse idCardVeriResponse = response.body();
+                String status = idCardVeriResponse.getStatus();
+                if (status.equals("SUCCESS")) {
+                    loadingDialog.hide();
+                    AppConstants.idCardVeriResponse = idCardVeriResponse;
+                    if (CardType.equals("Passport")){
+                        docType = "Passport";
+                    }else if (CardType.equals("IDcard_BackCard")){
+                        docType = "ID Card";
+                    }else if (CardType.equals("Driving_BackCard")){
+                        docType = "Driving License";
+                    }else  if (CardType.equals("Resident_Back")){
+                        docType = "Resident Permit";
+                    }
+                    Intent intent = new Intent(IDDocCameraActivity.this,IDCardVeriResultActivity.class);
+                    intent.putExtra("IDCardType",docType);
+                    startActivity(intent);
+                } else {
+                    loadingDialog.hide();
+                    Toast.makeText(IDDocCameraActivity.this, "Bad input MRZ image!", Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<IDCardVeriResponse> call, Throwable t) {
+                Toast.makeText(IDDocCameraActivity.this, "Server is not working now", Toast.LENGTH_LONG).show();
+                loadingDialog.hide();
             }
         });
 

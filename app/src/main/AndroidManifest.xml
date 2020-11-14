@@ -5,13 +5,18 @@
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
-    <uses-feature android:name="android.hardware.camera.front" />
+    <uses-feature
+        android:name="android.hardware.camera.front"
+        android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
 
     <application
         android:name=".Utils.CoreApp"
@@ -22,21 +27,16 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:usesCleartextTraffic="true"
-        android:theme="@style/AppTheme">
-        <activity android:name=".Activity.IDCardVeriResultActivity"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name=".Activity.FaceMatchResidentActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".Activity.FaceMatchDrivingActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".Activity.FaceMatchPassportActivity"
-            android:screenOrientation="portrait"/>
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
+        <activity android:name=".Activity.VideoResultActivity"></activity>
+        <activity android:name=".Activity.IntentActivity" />
+        <activity android:name=".Activity.POACameraActivity" />
+        <activity android:name=".Activity.POADocumentActivity" />
+        <activity android:name=".Activity.SanctionCameraActivity" />
+        <activity android:name=".Activity.VideoLivenessActivity" />
         <activity
-            android:name=".Activity.ResidentVerificationActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".Activity.DrivingVerificationActivity"
+            android:name=".Activity.IDCardVeriResultActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".Activity.IDDocCameraActivity"
@@ -48,19 +48,10 @@
             android:name=".Activity.SigninActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".Activity.PassportVerificatioinActivity"
-            android:screenOrientation="portrait" />
-        <activity
             android:name=".Activity.IDDocMainActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".Activity.IDCardVerificationActivity"
-            android:screenOrientation="portrait" />
-        <activity
             android:name=".Activity.SanstionAMLActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".Activity.FaceMatchIDCardActivity"
             android:screenOrientation="portrait" />
         <!-- <provider -->
         <!-- android:name="androidx.core.content.FileProvider" -->
@@ -96,10 +87,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <service android:name=".BackgroundService.BackgroundService" />
-<!--        <uses-library-->
-<!--            android:name="org.apache.http.legacy"-->
-<!--            android:required="false" />-->
     </application>
 
 </manifest>

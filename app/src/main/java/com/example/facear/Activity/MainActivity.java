@@ -35,8 +35,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    ImageView btnSetting;
-    Button btnLiveness,btnEnroll,btnAuth,btnFaceMatch,btnKeepID,btnSanction,btnIDDocVeri;
+    ImageView btnSetting,btnLogout;
+    Button btnLiveness,btnVideoLivness,btnEnroll,btnAuth,btnFaceMatch,btnKeepID,btnSanction,btnIDDocVeri;
     String faceTarget;
     String isEnrollCheck = "";
     String countryName;
@@ -60,16 +60,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        btnKeepID.setOnClickListener(this);
         btnIDDocVeri.setOnClickListener(this);
         btnSanction.setOnClickListener(this);
+//        btnVideoLivness.setOnClickListener(this);
+        btnLogout.setOnClickListener(this);
     }
     private void configureView(){
         btnSetting = findViewById(R.id.btnSetting);
         btnLiveness = findViewById(R.id.btnLiveness);
+//        btnVideoLivness = findViewById(R.id.btnVideoLivness);
         btnEnroll = findViewById(R.id.btnEnroll);
         btnAuth = findViewById(R.id.btnAuthe);
         btnFaceMatch = findViewById(R.id.btnFaceMatch);
 //        btnKeepID = findViewById(R.id.btnKeepID);
         btnSanction = findViewById(R.id.btnSanction);
         btnIDDocVeri = findViewById(R.id.btnIDDocVeri);
+        btnLogout = findViewById(R.id.btnLogout);
     }
     private void isPermissionGranted() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -103,40 +107,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void initData(){
 //        setContentView(R.layout.activity_kyc_main);
     }
-
-    private void AuthenticationToServer() {
-        String api_key = Preferences.getValue_String(MainActivity.this, Preferences.API_Key);
-        String secret_key = Preferences.getValue_String(MainActivity.this, Preferences.API_SecretKey);
-        loadingDialog = new LoadingDialog(MainActivity.this, false);
-        if (CoreApp.isNetworkConnection(MainActivity.this)) {
-            Call<AuthenticationResponse> call = RetrofitClient
-                    .getInstance().getApi().authenticateCheck(api_key, secret_key);
-            call.enqueue(new Callback<AuthenticationResponse>() {
-                @Override
-                public void onResponse(Call<AuthenticationResponse> call, Response<AuthenticationResponse> response) {
-                    AuthenticationResponse authenticationResponse = response.body();
-                    int statuscode = Integer.parseInt(authenticationResponse.getStatusCode());
-                    if (statuscode == 200) {
-                        AppConstants.api_token = authenticationResponse.getApi_access_token();
-                        userEnrolledCheck();
-                    } else {
-                        Toast.makeText(MainActivity.this, "Authentication Error, Please try again.", Toast.LENGTH_LONG).show();
-                        loadingDialog.hide();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<AuthenticationResponse> call, Throwable t) {
-                    Toast.makeText(MainActivity.this, "Server is not working now", Toast.LENGTH_LONG).show();
-                    loadingDialog.hide();
-                }
-            });
-        } else {
-            loadingDialog.hide();
-            Toast.makeText(MainActivity.this, "No internet connection available", Toast.LENGTH_LONG).show();
-        }
-    }
     private void userEnrolledCheck(){
+        loadingDialog = new LoadingDialog(MainActivity.this, false);
         String username = Preferences.getValue_String(MainActivity.this, Preferences.UserName);
         Call<UserEnrolledCheckResponse> call = RetrofitClient
                 .getInstance().getApi().userEnrolledCheck(username);
@@ -201,8 +173,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 intent_liveness.putExtra("faceTarget", faceTarget);
                 startActivity(intent_liveness);
                 break;
+//            case R.id.btnVideoLivness:
+//                faceTarget = "videoLiveness";
+//                Intent intent_video = new Intent(MainActivity.this, VideoLivenessActivity.class);
+//                intent_video.putExtra("Target", faceTarget);
+//                startActivity(intent_video);
+//                break;
             case R.id.btnEnroll:
-                AuthenticationToServer();
+                userEnrolledCheck();
                 break;
             case R.id.btnAuthe:
                 faceTarget = "userAuthentication";
@@ -210,22 +188,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 intent_authentication.putExtra("faceTarget", faceTarget);
                 startActivity(intent_authentication);
                 break;
-//            case R.id.btnKeepID:
-//                if (Preferences.getValue_Boolean(MainActivity.this, Preferences.isUserProfile, true)){
-//                    Intent intent = new Intent(MainActivity.this, KYC_MainActivity.class);
-//                    startActivity(intent);
-//                }else{
-//                    Intent intent = new Intent(MainActivity.this, KYC_LoginActivity.class);
-//                    startActivity(intent);
-//                }
-//                break;
             case R.id.btnFaceMatch:
                 Intent intent_FaceMatch = new Intent(MainActivity.this, IDDocMainActivity.class);
                 intent_FaceMatch.putExtra("Target","FaceMatchToIDDoc");
                 startActivity(intent_FaceMatch);
                 break;
             case R.id.btnSanction:
-                Intent intent_sanction = new Intent(MainActivity.this, SanstionAMLActivity.class);
+                Intent intent_sanction = new Intent(MainActivity.this, IDDocMainActivity.class);
+                intent_sanction.putExtra("Target","SanctionsPEP");
                 startActivity(intent_sanction);
                 break;
             case R.id.btnIDDocVeri:
@@ -233,6 +203,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 intent_IDVeri.putExtra("Target","IDDocVerification");
                 startActivity(intent_IDVeri);
                 break;
+            case R.id.btnLogout:
+                Intent intent = new Intent(MainActivity.this, SigninActivity.class);
+                startActivity(intent);
+                finish();
         }
 
     }

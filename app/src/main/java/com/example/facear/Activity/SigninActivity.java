@@ -35,6 +35,8 @@ public class SigninActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sigin);
+//        Intent intent = new Intent(SigninActivity.this,MainActivity.class);
+//        startActivity(intent);
         init();
         onSignin();
         onCreateAccount();
@@ -68,8 +70,6 @@ public class SigninActivity extends AppCompatActivity {
                     return;
                 }
                 AuthenticationToServer();
-//                Intent intent = new Intent(SigninActivity.this,MainActivity.class);
-//                startActivity(intent);
             }
         });
     }
